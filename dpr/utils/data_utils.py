@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright GC-DPR authors.
 # Copyright (c) Facebook, Inc. and its affiliates.
 # All rights reserved.
 #
