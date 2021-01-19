@@ -70,6 +70,9 @@ def add_training_params(parser: argparse.ArgumentParser):
                         help="Number of updates steps to accumulate before performing a backward/update pass.")
     parser.add_argument("--num_train_epochs", default=3.0, type=float,
                         help="Total number of training epochs to perform.")
+    parser.add_argument("--grad_cache", action="store_true")
+    parser.add_argument("--q_chunk_size", type=int, default=16)
+    parser.add_argument("--ctx_chunk_size", type=int, default=8)
 
 
 def add_cuda_params(parser: argparse.ArgumentParser):

@@ -28,15 +28,6 @@ def setup_for_distributed_mode(model: nn.Module, optimizer: torch.optim.Optimize
                                fp16: bool = False,
                                fp16_opt_level: str = "O1") -> (nn.Module, torch.optim.Optimizer):
     model.to(device)
-    if fp16:
-        try:
-            import apex
-            from apex import amp
-            apex.amp.register_half_function(torch, "einsum")
-        except ImportError:
-            raise ImportError("Please install apex from https://www.github.com/nvidia/apex to use fp16 training.")
-
-        model, optimizer = amp.initialize(model, optimizer, opt_level=fp16_opt_level)
 
     if n_gpu > 1:
         model = torch.nn.DataParallel(model)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright GC-DPR authors.
 # Copyright (c) Facebook, Inc. and its affiliates.
 #
 # This source code is licensed under the MIT license found in the
@@ -11,9 +12,9 @@ with open('README.md') as f:
     readme = f.read()
 
 setup(
-    name='dpr',
+    name='gc-dpr',
     version='0.1.0',
-    description='Facebook AI Research Open Domain Q&A Toolkit',
+    description='Gradient Cached Dense Passage Retrieval',
     url='',  # TODO
     classifiers=[
         'Intended Audience :: Science/Research',
@@ -32,7 +33,7 @@ setup(
         'filelock',
         'numpy',
         'regex',
-        'torch>=1.2.0',
+        'torch>=1.6.0',
         'transformers>=3.0.0,<3.1.0',
         'tqdm>=4.27',
         'wget',

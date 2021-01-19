@@ -12,11 +12,13 @@ Utilities for general purpose data processing
 import json
 import logging
 import math
+import os
 import pickle
 import random
 from typing import List, Iterator, Callable
 
 from torch import Tensor as T
+from torch.utils.data import IterableDataset
 
 logger = logging.getLogger()
 
@@ -59,6 +61,7 @@ class ShardedDataIterator(object):
     It fills the extra sample by just taking first samples in a shard.
     It can also optionally enforce identical batch size for all iterations (might be useful for DP mode).
     """
+
     def __init__(self, data: list, shard_id: int = 0, num_shards: int = 1, batch_size: int = 1, shuffle=True,
                  shuffle_seed: int = 0, offset: int = 0,
                  strict_batch_size: bool = False
@@ -132,6 +135,67 @@ class ShardedDataIterator(object):
     def apply(self, visitor_func: Callable):
         for sample in self.data:
             visitor_func(sample)
+
+
+class ShardedDataIterableDataset(ShardedDataIterator, IterableDataset):
+    def __init__(self, *args, process_fn=None, **kwargs):
+        ShardedDataIterator.__init__(self, *args, **kwargs)
+
+        self.epoch = None
+        self.curr_idx = None
+        self.idx_gen = None
+        self.shard_samples = None
+        self._max_iterations = None
+        self._ended = False
+        self.process_fn = process_fn
+
+    def set_epoch(self, epoch: int):
+        self.epoch = epoch
+
+    def __iter__(self):
+        if self.shuffle:
+            # to be able to resume, same shuffling should be used when starting from a failed/stopped iteration
+            epoch_rnd = random.Random(self.shuffle_seed + self.epoch)
+            epoch_rnd.shuffle(self.data)
+
+        # if resuming iteration somewhere in the middle of epoch, one needs to adjust max_iterations
+        self._max_iterations = self.max_iterations - self.iteration
+        self.shard_samples = self.data[self.shard_start_idx:self.shard_end_idx]
+        self.idx_gen = iter(range(self.iteration * self.batch_size, len(self.shard_samples), self.batch_size))
+        self.iteration = 0
+        self._ended = False
+
+        return self
+
+    def __next__(self):
+        if not self._ended:
+            try:
+                i = next(self.idx_gen)
+                items = self.shard_samples[i:i + self.batch_size]
+                if self.strict_batch_size and len(items) < self.batch_size:
+                    logger.debug('Extending batch to max size')
+                    items.extend(self.shard_samples[0:self.batch_size - len(items)])
+                self.iteration += 1
+                if self.process_fn:
+                    random.seed(self.shuffle_seed + self.epoch + self.iteration)
+                    return self.process_fn(items)
+                return items
+            except StopIteration:
+                self._ended = True
+
+        # some shards may done iterating while the others are at the last batch. Just return the first batch
+        if self.iteration < self._max_iterations:
+            logger.debug('Fulfilling non complete shard='.format(self.shard_id))
+            self.iteration += 1
+            batch = self.shard_samples[0:self.batch_size]
+            if self.process_fn:
+                random.seed(self.shuffle_seed + self.epoch + self.iteration)
+                return self.process_fn(batch)
+            return batch
+
+        logger.info('Finished iterating, iteration={}, shard={}'.format(self.iteration, self.shard_id))
+        # reset the iteration status
+        raise StopIteration
 
 
 def normalize_question(question: str) -> str:

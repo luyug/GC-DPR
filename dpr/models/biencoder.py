@@ -12,6 +12,7 @@ BiEncoder component + loss function for 'all-in-batch' training
 import collections
 import logging
 import random
+from dataclasses import dataclass
 from typing import Tuple, List
 
 import numpy as np
@@ -25,9 +26,22 @@ from dpr.utils.data_utils import normalize_question
 
 logger = logging.getLogger(__name__)
 
-BiEncoderBatch = collections.namedtuple('BiENcoderInput',
-                                        ['question_ids', 'question_segments', 'context_ids', 'ctx_segments',
-                                         'is_positive', 'hard_negatives'])
+
+
+@dataclass
+class BiEncoderBatch:
+    question_ids: T
+    question_segments: T
+    context_ids: T
+    ctx_segments: T
+    is_positive: List
+    hard_negatives: List
+
+    def _asdict(self):
+        return self.__dict__
+
+
+
 
 
 def dot_product_scores(q_vectors: T, ctx_vectors: T) -> T:
@@ -61,7 +75,7 @@ class BiEncoder(nn.Module):
 
     @staticmethod
     def get_representation(sub_model: nn.Module, ids: T, segments: T, attn_mask: T, fix_encoder: bool = False) -> (
-    T, T, T):
+            T, T, T):
         sequence_output = None
         pooled_output = None
         hidden_states = None
@@ -87,6 +101,28 @@ class BiEncoder(nn.Module):
                                                                         ctx_attn_mask, self.fix_ctx_encoder)
 
         return q_pooled_out, ctx_pooled_out
+
+    @classmethod
+    def get_input_create_fn(
+            cls,
+            tensorizer: Tensorizer,
+            insert_title: bool,
+            num_hard_negatives: int = 0,
+            num_other_negatives: int = 0,
+            shuffle: bool = True,
+            shuffle_positives: bool = False,
+    ):
+        def fn(samples: List):
+            return cls.create_biencoder_input(
+                samples, tensorizer, insert_title,
+                num_hard_negatives=num_hard_negatives,
+                num_other_negatives=num_other_negatives,
+                shuffle=shuffle,
+                shuffle_positives=shuffle_positives,
+            )
+        return fn
+
+
 
     @classmethod
     def create_biencoder_input(cls,

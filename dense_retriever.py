@@ -210,6 +210,25 @@ def main(args):
 
     retriever = DenseRetriever(encoder, args.batch_size, tensorizer, index)
 
+    # get questions & answers
+    questions = []
+    question_answers = []
+
+    for ds_item in parse_qa_csv_file(args.qa_file):
+        question, answers = ds_item
+        questions.append(question)
+        question_answers.append(answers)
+
+    if args.q_encoding_path and not args.re_encode_q and os.path.exists(args.q_encoding_path):
+        questions_tensor = torch.load(args.q_encoding_path)
+    else:
+        questions_tensor = retriever.generate_question_vectors(questions)
+        if args.encode_q_and_save:
+            torch.save(questions_tensor, args.q_encoding_path)
+
+    # finished encoding, exit
+    if args.encode_q_and_save:
+        return
 
     # index all passages
     ctx_files_pattern = args.encoded_ctx_file
@@ -223,16 +242,6 @@ def main(args):
         retriever.index.index_data(input_paths)
         if args.save_or_load_index:
             retriever.index.serialize(index_path)
-    # get questions & answers
-    questions = []
-    question_answers = []
-
-    for ds_item in parse_qa_csv_file(args.qa_file):
-        question, answers = ds_item
-        questions.append(question)
-        question_answers.append(answers)
-
-    questions_tensor = retriever.generate_question_vectors(questions)
 
     # get top k results
     top_ids_and_scores = retriever.get_top_docs(questions_tensor.numpy(), args.n_docs)
@@ -275,10 +284,18 @@ if __name__ == '__main__':
     parser.add_argument("--hnsw_index", action='store_true', help='If enabled, use inference time efficient HNSW index')
     parser.add_argument("--save_or_load_index", action='store_true', help='If enabled, save index')
 
+    parser.add_argument("--encode_q_and_save", action='store_true')
+    parser.add_argument("--re_encode_q", action='store_true')
+    parser.add_argument("--q_encoding_path")
+
     args = parser.parse_args()
 
     assert args.model_file, 'Please specify --model_file checkpoint to init model weights'
 
     setup_args_gpu(args)
     print_args(args)
+
+    if args.encode_q_and_save and args.q_encoding_path is None:
+        raise ValueError(f'Requires q_encoding_path when encoding question')
+
     main(args)
