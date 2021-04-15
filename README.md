@@ -296,7 +296,7 @@ If you find `GC-DPR` helpful, please consider citing [our paper](https://arxiv.o
 ```
 @misc{gao2021scaling,
       title={Scaling Deep Contrastive Learning Batch Size with Almost Constant Peak Memory Usage}, 
-      author={Luyu Gao and Yunyi Zhang},
+      author={Luyu Gao, Yunyi Zhang, Jiawei Han, Jamie Callan},
       year={2021},
       eprint={2101.06983},
       archivePrefix={arXiv},
