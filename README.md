@@ -10,8 +10,8 @@ We introduce Gradient Cache technique which enables scaling batch size of the co
 - Gradient Cache technique separates back propagation into loss to representation part and representation to encoder model part. It uses an extra forward pass without gradient tracking to compute representations and then store representations' gradients in cache. 
 - The cached representation gradients remove data dependency in encoder back propagation and allows updating encoders one sub-batch at a time to fit GPU memory.
 
-Details can be found in our preprint [Scaling Deep Contrastive Learning Batch Size with Almost Constant Peak Memory Usage
-](https://arxiv.org/abs/2101.06983).
+Details can be found in our paper [Scaling Deep Contrastive Learning Batch Size with Almost Constant Peak Memory Usage
+](https://arxiv.org/abs/2101.06983), to appeaer at The 6th Workshop on Representation Learning for NLP (RepL4NLP) 2021. Talk to us at ACL if you are interested!
  
 ## Understanding the Code
 One of the goals of this repo is to help clarify our gradient cache technique. The initial commit of the repo is a snapshot of `DPR`. You can run `diff` against it to see all changes made in `GC-DPR`. In general, we have modified train and inference codes. The model code is kept unchanged, and therefore users should be able to use trained checkpoints interchangeably between `DPR` and `GC-DPR`. 
