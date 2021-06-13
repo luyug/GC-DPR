@@ -10,9 +10,16 @@ We introduce Gradient Cache technique which enables scaling batch size of the co
 - Gradient Cache technique separates back propagation into loss to representation part and representation to encoder model part. It uses an extra forward pass without gradient tracking to compute representations and then store representations' gradients in cache. 
 - The cached representation gradients remove data dependency in encoder back propagation and allows updating encoders one sub-batch at a time to fit GPU memory.
 
-Details can be found in our paper [Scaling Deep Contrastive Learning Batch Size with Almost Constant Peak Memory Usage
+Details can be found in our paper [Scaling Deep Contrastive Learning Batch Size under Memory Limited Setup
 ](https://arxiv.org/abs/2101.06983), to appeaer at The 6th Workshop on Representation Learning for NLP (RepL4NLP) 2021. Talk to us at ACL if you are interested!
- 
+ ```
+@inproceedings{gao2021scaling,
+      title={Scaling Deep Contrastive Learning Batch Size under Memory Limited Setup},
+      author={Luyu Gao, Yunyi Zhang, Jiawei Han, Jamie Callan},
+      booktitle ={Proceedings of the 6th Workshop on Representation Learning for NLP},
+      year={2021},
+}
+```
 ## Understanding the Code
 One of the goals of this repo is to help clarify our gradient cache technique. The initial commit of the repo is a snapshot of `DPR`. You can run `diff` against it to see all changes made in `GC-DPR`. In general, we have modified train and inference codes. The model code is kept unchanged, and therefore users should be able to use trained checkpoints interchangeably between `DPR` and `GC-DPR`. 
  
@@ -294,13 +301,11 @@ We provide all input and intermediate results for e2e pipeline for NQ dataset an
 ## Reference  
 If you find `GC-DPR` helpful, please consider citing [our paper](https://arxiv.org/abs/2101.06983):
 ```
-@misc{gao2021scaling,
-      title={Scaling Deep Contrastive Learning Batch Size with Almost Constant Peak Memory Usage}, 
+@inproceedings{gao2021scaling,
+      title={Scaling Deep Contrastive Learning Batch Size under Memory Limited Setup},
       author={Luyu Gao, Yunyi Zhang, Jiawei Han, Jamie Callan},
+      booktitle ={Proceedings of the 6th Workshop on Representation Learning for NLP},
       year={2021},
-      eprint={2101.06983},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG}
 }
 ```
 Also consider citing the original [DPR paper](https://arxiv.org/abs/2004.04906):  
