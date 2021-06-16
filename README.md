@@ -4,6 +4,8 @@
 Gradient Cached Dense Passage Retrieval (`GC-DPR`) - is an extension of the original [DPR](https://github.com/facebookresearch/DPR) library.  
 We introduce Gradient Cache technique which enables scaling batch size of the contrastive form loss and therefore the number of in-batch negatives far beyond GPU RAM limitation. With `GC-DPR` , you can reproduce the state-of-the-art open Q&A system trained on 8 x 32GB V100 GPUs with a single 11 GB GPU.  
 
+To use Gradient Cache in your own project, checkout our [GradCache package](https://github.com/luyug/GradCache).
+
 ## Gradient Cache Technique  
 - Retriever training quality depends on its effective batch size.
 - The contrastive form loss (NLL with in-batch negatives) conditions on the entire batch and requires fitting the entire batch into GPU memory.
